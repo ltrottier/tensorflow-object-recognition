@@ -30,8 +30,15 @@ def loop(
     summary_writer_test = tf.summary.FileWriter(
         os.path.join(experiment_folder, 'test'), sess.graph)
 
+    # saver
+    saver_filename = os.path.join(experiment_folder, "variables.ckpt")
+    saver = tf.train.Saver()
+
     # variable initializer
-    sess.run(tf.global_variables_initializer())
+    if os.path.exists(os.path.join(experiment_folder, "checkpoint")):
+        saver.restore(sess, saver_filename)
+    else:
+        sess.run(tf.global_variables_initializer())
 
     # get epoch
     epoch = sess.run(epoch_tensor)
@@ -62,8 +69,10 @@ def loop(
         summary_writer_test.add_summary(test_summary_str, epoch)
         sess.run(test_end)
 
-        # epoch
+        # finalize epoch
         epoch = sess.run(epoch_tensor)
+        saver.save(sess, saver_filename)
+
 
 
     summary_writer_train.close()
