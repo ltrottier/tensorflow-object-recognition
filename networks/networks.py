@@ -15,10 +15,13 @@ def create_dummy(input_tensor, target_tensor, n_classes):
 
 def create(input_tensor, target_tensor, network_name, network_args):
 
-    if network_name == 'dummy':
-        network_output_tensor = create_dummy(input_tensor, target_tensor, *network_args)
-    else:
-        raise Exception("Invalid network name: {}".format(network_name))
+    with tf.variable_scope('network'):
+        # TODO add weight decay
+
+        if network_name == 'dummy':
+            network_output_tensor = create_dummy(input_tensor, target_tensor, *network_args)
+        else:
+            raise Exception("Invalid network name: {}".format(network_name))
 
     return network_output_tensor
 

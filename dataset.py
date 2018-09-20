@@ -1,6 +1,4 @@
-import os
 import numpy as np
-import itertools
 import tensorflow as tf
 import tensorflow.keras as keras
 from tensorflow.data import Dataset, Iterator

@@ -1,6 +1,8 @@
+# global
 import numpy as np
 import tensorflow as tf
 
+# local
 import stats
 import networks
 
@@ -8,12 +10,11 @@ import networks
 #### LOSS
 def create_loss(target_tensor, network_output_tensor, loss_name):
 
-    # create loss tensor
-    if loss_name == 'sparse_softmax_cross_entropy':
-        loss_tensor = tf.losses.sparse_softmax_cross_entropy(target_tensor, network_output_tensor)
-    else:
-        raise Exception("Invalid loss name: {}".format(loss_name))
-
+    with tf.variable_scope('loss'):
+        if loss_name == 'sparse_softmax_cross_entropy':
+            loss_tensor = tf.losses.sparse_softmax_cross_entropy(target_tensor, network_output_tensor)
+        else:
+            raise Exception("Invalid loss name: {}".format(loss_name))
 
     return loss_tensor
 
@@ -21,14 +22,14 @@ def create_loss(target_tensor, network_output_tensor, loss_name):
 #### EPOCH
 def create_epoch():
 
-    epoch = tf.get_variable(
-        'epoch',
-        [],
-        initializer=tf.initializers.constant(0),
-        trainable=False)
-
-    epoch_increment_asgn = tf.assign_add(epoch, tf.constant(1.0))
-    tf.add_to_collection("test_end", epoch_increment_asgn)
+    with tf.variable_scope('epoch'):
+        epoch = tf.get_variable(
+            'epoch',
+            [],
+            initializer=tf.initializers.constant(0),
+            trainable=False)
+        epoch_increment_asgn = tf.assign_add(epoch, tf.constant(1.0))
+        tf.add_to_collection("test_end", epoch_increment_asgn)
 
     return epoch
 
@@ -36,18 +37,22 @@ def create_epoch():
 #### LEARNING RATE SCHEDULER
 def create_learning_rate_scheduler(epoch_tensor, lr_init, lr_decay, lr_schedule):
 
-    lr_tensor = tf.get_variable(
-        'learning_rate',
-        [],
-        initializer=tf.initializers.constant(lr_init),
-        trainable=False)
+    with tf.variable_scope('learning_rate'):
+        lr_tensor = tf.get_variable(
+            'variable',
+            [],
+            initializer=tf.initializers.constant(lr_init),
+            trainable=False)
+        lr_init_tensor = tf.constant(lr_init, name='learning_rate_init', dtype=tf.float32)
+        lr_decay_tensor = tf.constant(lr_decay, name='learning_rate_decay', dtype=tf.float32)
+        lr_schedule_tensor = tf.constant(lr_schedule, name='learning_rate_schedule', dtype=tf.float32)
+        lr_new_value = (lr_init_tensor * lr_decay_tensor **
+                        tf.reduce_sum(tf.cast(lr_schedule_tensor <= epoch_tensor, tf.float32)))
+        lr_scheduler = tf.assign(lr_tensor, lr_new_value)
+        tf.add_to_collection("train_begin", lr_scheduler)
 
-    lr_init_tensor = tf.constant(lr_init, name='learning_rate_init', dtype=tf.float32)
-    lr_decay_tensor = tf.constant(lr_decay, name='learning_rate_decay', dtype=tf.float32)
-    lr_schedule_tensor = tf.constant(lr_schedule, name='learning_rate_schedule', dtype=tf.float32)
-    lr_new_value = lr_init_tensor * lr_decay_tensor ** tf.reduce_sum(tf.cast(lr_schedule_tensor <= epoch_tensor, tf.float32))
-    lr_scheduler = tf.assign(lr_tensor, lr_new_value)
-    tf.add_to_collection("train_begin", lr_scheduler)
+        lr_summary_protobuf = tf.summary.scalar('summary', lr_tensor)
+        tf.add_to_collection('train_summary', lr_summary_protobuf)
 
     return lr_tensor
 
@@ -87,21 +92,16 @@ def initialize(
 
 
     # create network
-    with tf.variable_scope('network'):
-        # TODO add weight decay
-        network_output_tensor = networks.create(input_tensor, target_tensor, network_name, network_args)
+    network_output_tensor = networks.create(input_tensor, target_tensor, network_name, network_args)
 
     # create loss
-    with tf.variable_scope('loss'):
-        loss_tensor = create_loss(target_tensor, network_output_tensor, loss_name)
+    loss_tensor = create_loss(target_tensor, network_output_tensor, loss_name)
 
     # create epoch
-    with tf.variable_scope('epoch'):
-        epoch_tensor = create_epoch()
+    epoch_tensor = create_epoch()
 
     # create learning rate scheduler
-    with tf.variable_scope('learning_rate'):
-        lr_tensor = create_learning_rate_scheduler(epoch_tensor, lr_init, lr_decay, lr_schedule)
+    lr_tensor = create_learning_rate_scheduler(epoch_tensor, lr_init, lr_decay, lr_schedule)
 
     # create optimizer
     with tf.variable_scope('optimizer'):

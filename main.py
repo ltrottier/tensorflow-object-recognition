@@ -57,9 +57,9 @@ optimizer_name = 'adam'
 momentum = 0.9
 nesterov = True
 weight_decay = 1e-4
-lr_init = 0.001
+lr_init = 0.1
 lr_decay = 0.1
-lr_schedule = [1000]
+lr_schedule = [100]
 model_init = model.initialize(
     input_tensor,
     target_tensor,
