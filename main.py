@@ -1,12 +1,21 @@
 import os
 import numpy as np
-import itertools
 import tensorflow as tf
-import tensorflow.keras as keras
-from tensorflow.data import Dataset, Iterator
+import json
+import argparse
 
 import dataset
 import model
+import train
+
+
+#parser = argparse.ArgumentParser()
+#parser.add_argument('optsfile', help='opts file generated with opts.py')
+#args = parser.parse_args()
+
+## load opts
+#with open(args.optsfile, 'r') as fid:
+#    opts = json.load(fid)
 
 
 n_epochs = 10
@@ -16,7 +25,7 @@ dataset_name = 'cifar10'
 dataset_dir = None
 batch_size = 4
 shuffle = False
-num_workers = 1
+num_workers = 4
 drop_last = True
 augment = False
 dataset_init = dataset.initialize(
@@ -75,45 +84,20 @@ test_step = model_init[5]
 test_summary = model_init[6]
 
 
-# session
-sess = tf.Session()
-
-# summary writer
 experiment_folder = 'results/debug'
-summary_writer_train = tf.summary.FileWriter(
-    os.path.join(experiment_folder, 'train'), sess.graph)
-summary_writer_test = tf.summary.FileWriter(
-    os.path.join(experiment_folder, 'test'), sess.graph)
 
-# variable initializer
-sess.run(tf.global_variables_initializer())
+train.loop(
+    train_begin,
+    train_step,
+    train_summary,
+    test_begin,
+    test_step,
+    test_summary,
+    iterator_initializer_train,
+    iterator_initializer_test,
+    iterator_feed_dict_train,
+    iterator_feed_dict_test,
+    epoch_tensor,
+    n_epochs,
+    experiment_folder)
 
-epoch = int(sess.run(epoch_tensor))
-while epoch < n_epochs - 1:
-
-    print("training")
-    sess.run(iterator_initializer_train, feed_dict=iterator_feed_dict_train)
-    sess.run(train_begin)
-    for it in itertools.count(start=0, step=1):
-        try:
-            sess.run(train_step)
-        except tf.errors.OutOfRangeError:
-            break
-    train_summary_str, epoch = sess.run([train_summary, epoch_tensor])
-    summary_writer_train.add_summary(train_summary_str, epoch)
-
-    print("testing")
-    sess.run(iterator_initializer_test, feed_dict=iterator_feed_dict_test)
-    sess.run(test_begin)
-    for it in itertools.count(start=0, step=1):
-        try:
-            sess.run(test_step)
-        except tf.errors.OutOfRangeError:
-            break
-    test_summary_str, epoch = sess.run([test_summary, epoch_tensor])
-    summary_writer_test.add_summary(test_summary_str, epoch)
-
-
-summary_writer_train.close()
-summary_writer_test.close()
-sess.close()

@@ -54,22 +54,21 @@ def create_epoch():
 
 
 #### LEARNING RATE SCHEDULER
-def create_learning_rate_scheduler(epoch, lr_init, lr_decay, lr_schedule):
+def create_learning_rate_scheduler(epoch_tensor, lr_init, lr_decay, lr_schedule):
 
-    lr = tf.get_variable(
+    lr_tensor = tf.get_variable(
         'learning_rate',
         [],
         initializer=tf.initializers.constant(lr_init),
         trainable=False)
 
-    lr_init = tf.constant(lr_init, name='learning_rate_init', dtype=tf.float32)
-    lr_decay = tf.constant(lr_decay, name='learning_rate_decay', dtype=tf.float32)
-    lr_schedule = tf.constant(lr_schedule, name='learning_rate_schedule', dtype=tf.float32)
+    lr_init_tensor = tf.constant(lr_init, name='learning_rate_init', dtype=tf.float32)
+    lr_decay_tensor = tf.constant(lr_decay, name='learning_rate_decay', dtype=tf.float32)
+    lr_schedule_tensor = tf.constant(lr_schedule, name='learning_rate_schedule', dtype=tf.float32)
+    lr_new_value = lr_init_tensor * lr_decay_tensor ** tf.reduce_sum(tf.cast(lr_schedule_tensor <= epoch_tensor, tf.float32))
+    lr_scheduler = tf.assign(lr_tensor, lr_new_value)
 
-    lr_new_value = lr_init * lr_decay ** tf.reduce_sum(tf.cast(lr_schedule <= epoch, tf.float32))
-    lr_scheduler = tf.assign(lr, lr_new_value)
-
-    return lr_scheduler
+    return lr_tensor, lr_scheduler
 
 
 #### OPTIMIZER
@@ -187,11 +186,11 @@ def initialize(
 
     # create learning rate scheduler
     with tf.variable_scope('learning_rate'):
-        lr_scheduler = create_learning_rate_scheduler(epoch_tensor, lr_init, lr_decay, lr_schedule)
+        lr_tensor, lr_scheduler = create_learning_rate_scheduler(epoch_tensor, lr_init, lr_decay, lr_schedule)
 
     # create optimizer
     with tf.variable_scope('optimizer'):
-        optimizer_op = create_optimizer(loss_tensor, optimizer_name, lr_scheduler, momentum, nesterov)
+        optimizer_op = create_optimizer(loss_tensor, optimizer_name, lr_tensor, momentum, nesterov)
 
     # create stats
     with tf.variable_scope('stats'):
@@ -199,7 +198,7 @@ def initialize(
             stats_train_name, stats_test_name, target_tensor, network_output_tensor)
 
     # create final train steps
-    train_begin = stats_train['reset'] + [epoch_increment_asgn]
+    train_begin = stats_train['reset'] + [epoch_increment_asgn] + [lr_scheduler]
     train_step = [optimizer_op] + stats_train['update']
     train_summary = stats_train['save']
 

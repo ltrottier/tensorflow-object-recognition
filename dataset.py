@@ -20,7 +20,7 @@ def load_cifar10_dataset(
     x_tr = (x_tr.astype('float32') / 255.0)
     x_tst = (x_tst.astype('float32') / 255.0)
 
-    n_obs = 14
+    n_obs = 1000
     x_tr = x_tr[:n_obs]
     y_tr = y_tr[:n_obs]
     x_tst = x_tst[:n_obs]
@@ -50,10 +50,12 @@ def load_cifar10_dataset(
     if shuffle:
         #dataset_train = dataset_train.shuffle()
         pass
+    dataset_train = dataset_train.prefetch(num_workers * batch_size)
 
     # create the test Dataset object
     dataset_test = Dataset.from_tensor_slices((input_data_ph, target_data_ph))
     dataset_test = dataset_test.batch(batch_size_ph)
+    dataset_test = dataset_test.prefetch(num_workers * batch_size)
 
     # create the reinitializable iterators
     dataset_output_types = dataset_train.output_types
@@ -67,7 +69,7 @@ def load_cifar10_dataset(
     iterator_feed_dict_test = {input_data_ph: x_tst, target_data_ph: y_tst, batch_size_ph: batch_size}
 
     # input and target tensors
-    input_tensor, target_tensor = iterator.get_next()
+    input_tensor, target_tensor = iterator.get_next(name='sample')
 
     # dataset
     dataset_init = [
