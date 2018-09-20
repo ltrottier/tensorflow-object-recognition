@@ -51,8 +51,8 @@ iterator_feed_dict_test = dataset_init[8]
 network_name = 'dummy'
 network_args = [10]
 loss_name = 'sparse_softmax_cross_entropy'
-stats_train_name = 'error_rate'
-stats_test_name = 'error_rate'
+stats_train_list = ['error_rate', 'loss_average']
+stats_test_list = ['error_rate', 'loss_average']
 optimizer_name = 'adam'
 momentum = 0.9
 nesterov = True
@@ -66,8 +66,8 @@ model_init = model.initialize(
     network_name,
     network_args,
     loss_name,
-    stats_train_name,
-    stats_test_name,
+    stats_train_list,
+    stats_test_list,
     optimizer_name,
     momentum,
     nesterov,

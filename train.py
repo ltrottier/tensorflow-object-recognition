@@ -18,6 +18,7 @@ def loop(
         n_epochs,
         experiment_folder):
 
+
     # session
     sess = tf.Session()
 
@@ -35,25 +36,36 @@ def loop(
 
         # train
         sess.run(iterator_initializer_train, feed_dict=iterator_feed_dict_train)
+
+        # train/begin
         sess.run(train_begin)
         while True:
             try:
+                # train/step
                 sess.run(train_step)
             except tf.errors.OutOfRangeError:
                 break
+        # train/summary
         train_summary_str, epoch = sess.run([train_summary, epoch_tensor])
         summary_writer_train.add_summary(train_summary_str, epoch)
+        # train/end
 
         # test
         sess.run(iterator_initializer_test, feed_dict=iterator_feed_dict_test)
+
+        # test/begin
         sess.run(test_begin)
         while True:
             try:
+                # test/step
                 sess.run(test_step)
             except tf.errors.OutOfRangeError:
                 break
+        # test/summary
         test_summary_str, epoch = sess.run([test_summary, epoch_tensor])
         summary_writer_test.add_summary(test_summary_str, epoch)
+
+        # test/end
 
 
     summary_writer_train.close()
