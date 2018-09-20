@@ -79,20 +79,23 @@ epoch_tensor = model_init[0]
 train_begin = model_init[1]
 train_step = model_init[2]
 train_summary = model_init[3]
-test_begin = model_init[4]
-test_step = model_init[5]
-test_summary = model_init[6]
+train_end = model_init[4]
+test_begin = model_init[5]
+test_step = model_init[6]
+test_summary = model_init[7]
+test_end = model_init[8]
 
 
 experiment_folder = 'results/debug'
-
 train.loop(
     train_begin,
     train_step,
     train_summary,
+    train_end,
     test_begin,
     test_step,
     test_summary,
+    test_end,
     iterator_initializer_train,
     iterator_initializer_test,
     iterator_feed_dict_train,

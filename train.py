@@ -7,9 +7,11 @@ def loop(
         train_begin,
         train_step,
         train_summary,
+        train_end,
         test_begin,
         test_step,
         test_summary,
+        test_end,
         iterator_initializer_train,
         iterator_initializer_test,
         iterator_feed_dict_train,
@@ -31,41 +33,37 @@ def loop(
     # variable initializer
     sess.run(tf.global_variables_initializer())
 
+    # get epoch
     epoch = sess.run(epoch_tensor)
-    while epoch < n_epochs - 1:
 
+    # loop
+    while epoch < n_epochs:
         # train
         sess.run(iterator_initializer_train, feed_dict=iterator_feed_dict_train)
-
-        # train/begin
         sess.run(train_begin)
         while True:
             try:
-                # train/step
                 sess.run(train_step)
             except tf.errors.OutOfRangeError:
                 break
-        # train/summary
-        train_summary_str, epoch = sess.run([train_summary, epoch_tensor])
+        train_summary_str = sess.run(train_summary)
         summary_writer_train.add_summary(train_summary_str, epoch)
-        # train/end
+        sess.run(train_end)
 
         # test
         sess.run(iterator_initializer_test, feed_dict=iterator_feed_dict_test)
-
-        # test/begin
         sess.run(test_begin)
         while True:
             try:
-                # test/step
                 sess.run(test_step)
             except tf.errors.OutOfRangeError:
                 break
-        # test/summary
-        test_summary_str, epoch = sess.run([test_summary, epoch_tensor])
+        test_summary_str = sess.run(test_summary)
         summary_writer_test.add_summary(test_summary_str, epoch)
+        sess.run(test_end)
 
-        # test/end
+        # epoch
+        epoch = sess.run(epoch_tensor)
 
 
     summary_writer_train.close()
