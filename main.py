@@ -59,10 +59,10 @@ dataset_name = 'cifar10'
 dataset_dir = None
 # dataloader
 batch_size = 4
-shuffle = False
+shuffle = True
 num_workers = 4
 drop_last = True
-augment = False
+augment = True
 
 dataset_init = dataset.initialize(
     dataset_name,
@@ -100,8 +100,8 @@ network_name = 'resnet'
 network_args = [10, 18]
 
 # stats
-stats_train_list = ['error_rate', 'loss_average']
-stats_test_list = ['error_rate', 'loss_average']
+stats_train_list = ['error_rate', 'loss_average', 'input_image_visualization']
+stats_test_list = ['error_rate', 'loss_average', 'input_image_visualization']
 
 model_init = model.initialize(
     input_tensor,

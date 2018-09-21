@@ -74,7 +74,46 @@ def create_loss_average(network_output_tensor, loss_tensor, modes):
             tf.add_to_collection("{}_summary".format(mode), loss_average_summary_protobuf)
 
 
-def create_from_list(stats_train_list, stats_test_list, target_tensor, network_output_tensor, loss_tensor):
+def create_input_image_visualization(input_tensor, modes):
+
+    # input summary
+    with tf.variable_scope('input_image_visualization'):
+        input_image = tf.get_variable(
+            'variable',
+            [],
+            initializer=tf.initializers.zeros(),
+            trainable=False,
+            validate_shape=False)
+
+        first_batch = tf.get_variable(
+            'condition',
+            [],
+            dtype=tf.bool,
+            initializer=tf.initializers.constant(True),
+            trainable=False)
+
+        def true_fn():
+            first_batch_asgn = tf.assign(first_batch, False)
+            input_image_asgn = tf.assign(input_image, input_tensor, validate_shape=False)
+            return [first_batch_asgn, input_image_asgn]
+
+        def false_fn():
+            return [first_batch, input_image]
+
+        [first_batch_cond_asgn, input_image_cond_asgn] = tf.cond(tf.equal(first_batch, True), true_fn, false_fn)
+
+        input_image_summary_protobuf = tf.summary.image('image', input_image, 10)
+        first_batch_init = tf.variables_initializer([first_batch])
+
+        for mode in modes:
+            tf.add_to_collection("{}_begin".format(mode), first_batch_init)
+            tf.add_to_collection("{}_step".format(mode), first_batch_cond_asgn)
+            tf.add_to_collection("{}_step".format(mode), input_image_cond_asgn)
+            tf.add_to_collection("{}_summary".format(mode), input_image_summary_protobuf)
+
+
+
+def create_from_list(stats_train_list, stats_test_list, input_tensor, target_tensor, network_output_tensor, loss_tensor):
 
     # since we compute stats per epoch, always create the stats for the number of observations
     stats_train_list = ['n_observations'] + stats_train_list
@@ -89,6 +128,8 @@ def create_from_list(stats_train_list, stats_test_list, target_tensor, network_o
                 create_error_rate(target_tensor, network_output_tensor, modes)
             elif name == 'loss_average':
                 create_loss_average(network_output_tensor, loss_tensor, modes)
+            elif name == 'input_image_visualization':
+                create_input_image_visualization(input_tensor, modes)
             else:
                 raise Exception("Invalid stats name: {}, for modes: {}".format(name, modes))
 

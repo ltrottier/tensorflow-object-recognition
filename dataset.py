@@ -15,14 +15,12 @@ def load_cifar10_dataset(
 
     # load data
     (x_tr, y_tr), (x_tst, y_tst) = keras.datasets.cifar10.load_data()
-    x_tr = (x_tr.astype('float32') / 255.0)
-    x_tst = (x_tst.astype('float32') / 255.0)
 
-    n_obs = 100
-    x_tr = x_tr[:n_obs]
-    y_tr = y_tr[:n_obs]
-    x_tst = x_tst[:n_obs]
-    y_tst = y_tst[:n_obs]
+    #n_observations = 100
+    #x_tr = x_tr[:n_observations]
+    #y_tr = y_tr[:n_observations]
+    #x_tst = x_tst[:n_observations]
+    #y_tst = y_tst[:n_observations]
 
     # shape
     input_shape = list(x_tr.shape)
@@ -37,23 +35,41 @@ def load_cifar10_dataset(
     # create placeholder for batch size
     batch_size_ph = tf.placeholder(tf.int64, name='batch_size')
 
+    # create data augmentation
+    def augment_images(img, target):
+        img = tf.image.random_flip_left_right(img)
+        img = tf.image.resize_image_with_crop_or_pad(img, 36, 36)
+        img = tf.random_crop(img, [32, 32, 3])
+        img = tf.cast(img, tf.float32) / 255
+        return img, target
+
+    # create cast to float
+    def cast_to_float(img, target):
+        img = tf.cast(img, tf.float32) / 255
+        return img, target
+
     # create the train Dataset object
     dataset_train = Dataset.from_tensor_slices((input_data_ph, target_data_ph))
+
+    if shuffle:
+        dataset_train = dataset_train.shuffle(buffer_size=x_tr.shape[0])
+
+    if augment:
+        dataset_train = dataset_train.map(map_func=augment_images, num_parallel_calls=num_workers)
+    else:
+        dataset_train = dataset_train.map(map_func=cast_to_float, num_parallel_calls=num_workers)
+
     if drop_last:
         dataset_train = dataset_train.apply(tf.contrib.data.batch_and_drop_remainder(batch_size_ph))
     else:
         dataset_train = dataset_train.batch(batch_size_ph)
-    if augment:
-        pass
-    if shuffle:
-        #dataset_train = dataset_train.shuffle()
-        pass
-    dataset_train = dataset_train.prefetch(num_workers * batch_size)
+
+    dataset_train = dataset_train.prefetch(1)
 
     # create the test Dataset object
     dataset_test = Dataset.from_tensor_slices((input_data_ph, target_data_ph))
     dataset_test = dataset_test.batch(batch_size_ph)
-    dataset_test = dataset_test.prefetch(num_workers * batch_size)
+    dataset_test = dataset_test.prefetch(1)
 
     # create the reinitializable iterators
     dataset_output_types = dataset_train.output_types

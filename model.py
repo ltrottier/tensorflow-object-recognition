@@ -97,7 +97,7 @@ def initialize(
     create_optimizer(loss_tensor, optimizer_name, lr_tensor, momentum, nesterov)
 
     # create stats
-    stats.create_from_list(stats_train_list, stats_test_list, target_tensor, network_output_tensor, loss_tensor)
+    stats.create_from_list(stats_train_list, stats_test_list, input_tensor, target_tensor, network_output_tensor, loss_tensor)
 
     # create train calls
     train_begin = tf.get_collection("train_begin")
