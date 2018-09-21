@@ -20,7 +20,6 @@ def loop(
         n_epochs,
         experiment_folder):
 
-
     # session
     sess = tf.Session()
 
@@ -34,7 +33,7 @@ def loop(
     saver_filename = os.path.join(experiment_folder, "variables.ckpt")
     saver = tf.train.Saver()
 
-    # variable initializer
+    # initialize variables
     if os.path.exists(os.path.join(experiment_folder, "checkpoint")):
         saver.restore(sess, saver_filename)
     else:
@@ -45,6 +44,7 @@ def loop(
 
     # loop
     while epoch < n_epochs:
+
         # train
         sess.run(iterator_initializer_train, feed_dict=iterator_feed_dict_train)
         sess.run(train_begin)
@@ -72,7 +72,6 @@ def loop(
         # finalize epoch
         epoch = sess.run(epoch_tensor)
         saver.save(sess, saver_filename)
-
 
 
     summary_writer_train.close()

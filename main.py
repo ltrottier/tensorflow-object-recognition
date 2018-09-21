@@ -1,33 +1,69 @@
-import os
-import numpy as np
+# global
 import tensorflow as tf
 import json
 import argparse
 
+# local
 import dataset
 import model
 import train
 
 
-#parser = argparse.ArgumentParser()
-#parser.add_argument('optsfile', help='opts file generated with opts.py')
-#args = parser.parse_args()
+if False:
+    parser = argparse.ArgumentParser()
+    parser.add_argument('optsfile', help='opts file generated with opts.py')
+    args = parser.parse_args()
 
-## load opts
-#with open(args.optsfile, 'r') as fid:
-#    opts = json.load(fid)
+    # load opts
+    with open(args.optsfile, 'r') as fid:
+        opts = json.load(fid)
+
+    # dataset
+    dataset_name = opts['dataset_name']
+    dataset_dir = opts['dataset_dir']
+
+    # dataloader
+    batch_size = opts['dataloader_batch_size']
+    shuffle = opts['dataloader_shuffle']
+    num_workers = opts['dataloader_num_workers']
+    drop_last = opts['dataloader_drop_last']
+    augment = opts['dataloader_augment']
+
+    # optimizer
+    optimizer_name = opts['optim_name']
+    n_epochs = opts['optim_n_epochs']
+    lr_init = opts['optim_lr_init']
+    lr_decay = opts['optim_lr_decay']
+    lr_schedule = opts['optim_lr_schedule']
+    momentum = opts['optim_momentum']
+    nesterov = opts['optim_nesterov']
+    weight_decay = opts['optim_weight_decay']
+    loss_name = opts['optim_loss_name']
+
+    # network
+    network_name = opts['network_name']
+    network_args = opts['network_args']
+
+    # stats
+    stats_train_list = opts['stats_train_list']
+    stats_test_list = opts['stats_test_list']
+
+    # experiment
+    experiment_folder = opts['experiment_folder']
 
 
-n_epochs = 10
+#########################################################k
 
 # dataset
 dataset_name = 'cifar10'
 dataset_dir = None
+# dataloader
 batch_size = 4
 shuffle = False
 num_workers = 4
 drop_last = True
 augment = False
+
 dataset_init = dataset.initialize(
     dataset_name,
     dataset_dir,
@@ -36,6 +72,7 @@ dataset_init = dataset.initialize(
     num_workers,
     drop_last,
     augment)
+
 input_data_ph = dataset_init[0]
 target_data_ph = dataset_init[1]
 batch_size_ph = dataset_init[2]
@@ -47,19 +84,25 @@ iterator_feed_dict_train = dataset_init[7]
 iterator_feed_dict_test = dataset_init[8]
 
 
-# network
-network_name = 'dummy'
-network_args = [10]
-loss_name = 'sparse_softmax_cross_entropy'
-stats_train_list = ['error_rate', 'loss_average']
-stats_test_list = ['error_rate', 'loss_average']
+# optimizer
 optimizer_name = 'adam'
-momentum = 0.9
-nesterov = True
-weight_decay = 1e-4
+n_epochs = 10
 lr_init = 0.001
 lr_decay = 0.1
 lr_schedule = [100]
+momentum = 0.9
+nesterov = True
+weight_decay = 1e-4
+loss_name = 'sparse_softmax_cross_entropy'
+
+# network
+network_name = 'resnet'
+network_args = [10, 18]
+
+# stats
+stats_train_list = ['error_rate', 'loss_average']
+stats_test_list = ['error_rate', 'loss_average']
+
 model_init = model.initialize(
     input_tensor,
     target_tensor,
@@ -75,6 +118,7 @@ model_init = model.initialize(
     lr_init,
     lr_decay,
     lr_schedule)
+
 epoch_tensor = model_init[0]
 train_begin = model_init[1]
 train_step = model_init[2]
@@ -86,7 +130,9 @@ test_summary = model_init[7]
 test_end = model_init[8]
 
 
+# experiment
 experiment_folder = 'results/debug'
+
 train.loop(
     train_begin,
     train_step,

@@ -3,7 +3,6 @@ import tensorflow as tf
 
 
 def create_n_observations(network_output_tensor, modes):
-    # number of observations
     with tf.variable_scope('n_observations'):
         n_observations = tf.get_variable(
             'variable',
@@ -23,6 +22,7 @@ def create_n_observations(network_output_tensor, modes):
 
 
 def create_error_rate(target_tensor, network_output_tensor, modes):
+
     # number of observations
     n_observations = tf.get_variable('n_observations/variable')
 
@@ -57,7 +57,6 @@ def create_loss_average(network_output_tensor, loss_tensor, modes):
     n_observations = tf.get_variable('n_observations/variable')
 
     with tf.variable_scope('loss_average'):
-        # create loss variable
         loss_sum = tf.get_variable(
             'loss_sum',
             [],
@@ -81,23 +80,25 @@ def create_from_list(stats_train_list, stats_test_list, target_tensor, network_o
     stats_train_list = ['n_observations'] + stats_train_list
     stats_test_list = ['n_observations'] + stats_test_list
 
-    def add_stats(name, target_tensor, network_output_tensor, loss_tensor, modes):
-        if name == 'n_observations':
-            create_n_observations(network_output_tensor, modes)
-        elif name == 'error_rate':
-            create_error_rate(target_tensor, network_output_tensor, modes)
-        elif name == 'loss_average':
-            create_loss_average(network_output_tensor, loss_tensor, modes)
-        else:
-            raise Exception("Invalid stats name: {}, for modes: {}".format(name, modes))
+    with tf.variable_scope('stats', reuse=tf.AUTO_REUSE):
 
-    # train stats
-    for stats_name in stats_train_list:
-        modes = ['train', 'test'] if stats_name in stats_test_list else ['train']
-        add_stats(stats_name, target_tensor, network_output_tensor, loss_tensor, modes)
+        def add_stats(name, target_tensor, network_output_tensor, loss_tensor, modes):
+            if name == 'n_observations':
+                create_n_observations(network_output_tensor, modes)
+            elif name == 'error_rate':
+                create_error_rate(target_tensor, network_output_tensor, modes)
+            elif name == 'loss_average':
+                create_loss_average(network_output_tensor, loss_tensor, modes)
+            else:
+                raise Exception("Invalid stats name: {}, for modes: {}".format(name, modes))
 
-    # test stats
-    for stats_name in stats_test_list:
-        if stats_name in stats_train_list:
-            continue
-        add_stats(stats_name, target_tensor, network_output_tensor, loss_tensor, ['test'])
+        # train stats
+        for stats_name in stats_train_list:
+            modes = ['train', 'test'] if stats_name in stats_test_list else ['train']
+            add_stats(stats_name, target_tensor, network_output_tensor, loss_tensor, modes)
+
+        # test stats
+        for stats_name in stats_test_list:
+            if stats_name in stats_train_list:
+                continue
+            add_stats(stats_name, target_tensor, network_output_tensor, loss_tensor, ['test'])

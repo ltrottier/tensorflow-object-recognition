@@ -22,29 +22,31 @@ parser.add_argument('--dataloader-augment', dest='dataloader_augment', action='s
 parser.add_argument('--no-dataloader-augment', dest='dataloader_augment', action='store_false')
 parser.set_defaults(dataloader_augment=True)
 
-# experiment
-parser.add_argument('--experiment-folder', default='results/exp1')
-
 # optim
 parser.add_argument('--optim-name', default='sgd')
-parser.add_argument('--optim-n-epoch', type=int, default=300)
+parser.add_argument('--optim-n-epochs', type=int, default=300)
 parser.add_argument('--optim-lr-init', type=float, default=0.1)
-parser.add_argument('--optim-lr-schedule', nargs='+', default=[100, 180, 240, 280], type=int)
 parser.add_argument('--optim-lr-decay', type=float, default=0.2)
+parser.add_argument('--optim-lr-schedule', nargs='+', default=[100, 180, 240, 280], type=int)
 parser.add_argument('--optim-momentum', type=float, default=0.9)
 parser.add_argument('--optim-nesterov', dest='optim_nesterov', action='store_true')
 parser.add_argument('--no-optim-nesterov', dest='optim_nesterov', action='store_false')
 parser.set_defaults(optim_nesterov=True)
 parser.add_argument('--optim-weight-decay', type=float, default=1e-4)
+parser.add_argument('--optim-loss-name', default='sparse_softmax_cross_entropy')
 
 # network
 parser.add_argument('--network-name', default='resnet')
 parser.add_argument('--network-args', nargs='+', default=[10, 32, 2, 5], type=int)
 
-# criterion
-parser.add_argument('--criterion-train', default='cross_entropy')
-parser.add_argument('--criterion-test', default='cross_entropy')
+# stats
+parser.add_argument('--stats-train-list', nargs='+', default=['error_rate', 'loss_average'])
+parser.add_argument('--stats-test-list', nargs='+', default=['error_rate', 'loss_average'])
 
+# experiment
+parser.add_argument('--experiment-folder', default='results/exp1')
+
+# parse
 args = parser.parse_args()
 opts = vars(args)
 

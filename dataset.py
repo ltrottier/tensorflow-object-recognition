@@ -18,7 +18,7 @@ def load_cifar10_dataset(
     x_tr = (x_tr.astype('float32') / 255.0)
     x_tst = (x_tst.astype('float32') / 255.0)
 
-    n_obs = 1000
+    n_obs = 100
     x_tr = x_tr[:n_obs]
     y_tr = y_tr[:n_obs]
     x_tst = x_tst[:n_obs]
@@ -83,6 +83,7 @@ def load_cifar10_dataset(
     ]
 
     return dataset_init
+
 
 def initialize(
         dataset_name,
