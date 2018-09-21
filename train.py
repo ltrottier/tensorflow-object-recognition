@@ -21,7 +21,9 @@ def loop(
         experiment_folder):
 
     # session
-    sess = tf.Session()
+    config = tf.ConfigProto()
+    config.gpu_options.allow_growth = True
+    sess = tf.Session(config=config)
 
     # summary writer
     summary_writer_train = tf.summary.FileWriter(
