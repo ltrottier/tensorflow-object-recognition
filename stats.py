@@ -102,7 +102,7 @@ def create_input_image_visualization(input_tensor, modes):
 
         [first_batch_cond_asgn, input_image_cond_asgn] = tf.cond(tf.equal(first_batch, True), true_fn, false_fn)
 
-        input_image_summary_protobuf = tf.summary.image('image', input_image, 10)
+        input_image_summary_protobuf = tf.summary.image('image', input_image, 3)
         first_batch_init = tf.variables_initializer([first_batch])
 
         for mode in modes:

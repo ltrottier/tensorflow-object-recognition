@@ -7,7 +7,7 @@ parser = ArgumentParser()
 
 # dataset
 parser.add_argument('--dataset-name', default='cifar10')
-parser.add_argument('--dataset-dir', default='datasets/cifar10')
+parser.add_argument('--dataset-dir', default='')
 
 # dataloader
 parser.add_argument('--dataloader-batch-size', type=int, default=32)
@@ -37,11 +37,13 @@ parser.add_argument('--optim-loss-name', default='sparse_softmax_cross_entropy')
 
 # network
 parser.add_argument('--network-name', default='resnet')
-parser.add_argument('--network-args', nargs='+', default=[10, 32, 2, 5], type=int)
+parser.add_argument('--network-args', nargs='+', default=[10, 18], type=int)
 
 # stats
-parser.add_argument('--stats-train-list', nargs='+', default=['error_rate', 'loss_average'])
-parser.add_argument('--stats-test-list', nargs='+', default=['error_rate', 'loss_average'])
+parser.add_argument('--stats-train-list', nargs='+',
+                    default=['error_rate', 'loss_average', 'input_image_visualization'])
+parser.add_argument('--stats-test-list', nargs='+',
+                    default=['error_rate', 'loss_average', 'input_image_visualization'])
 
 # experiment
 parser.add_argument('--experiment-folder', default='results/exp1')
