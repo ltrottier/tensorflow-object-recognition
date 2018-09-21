@@ -101,7 +101,7 @@ def initialize(
 
     # create train calls
     train_begin = tf.get_collection("train_begin")
-    train_step = tf.get_collection("train_step")
+    train_step = tf.get_collection("train_step") + tf.get_collection(tf.GraphKeys.UPDATE_OPS)
     train_summary = tf.summary.merge(tf.get_collection("train_summary"))
     train_end = tf.get_collection("train_end")
 

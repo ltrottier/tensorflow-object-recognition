@@ -68,6 +68,7 @@ def load_cifar10_dataset(
 
     # create the test Dataset object
     dataset_test = Dataset.from_tensor_slices((input_data_ph, target_data_ph))
+    dataset_test = dataset_test.map(map_func=cast_to_float, num_parallel_calls=num_workers)
     dataset_test = dataset_test.batch(batch_size_ph)
     dataset_test = dataset_test.prefetch(1)
 
