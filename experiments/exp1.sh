@@ -6,7 +6,7 @@ dataloader_batch_size=32
 
 network_name=resnet
 network_args_1=10
-network_args_2=18
+network_args_2=50
 
 for i in {1..5}
 do
