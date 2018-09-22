@@ -24,20 +24,20 @@ parser.set_defaults(dataloader_augment=True)
 
 # optim
 parser.add_argument('--optim-name', default='sgd')
-parser.add_argument('--optim-n-epochs', type=int, default=300)
+parser.add_argument('--optim-n-epochs', type=int, default=350)
 parser.add_argument('--optim-lr-init', type=float, default=0.1)
-parser.add_argument('--optim-lr-decay', type=float, default=0.2)
-parser.add_argument('--optim-lr-schedule', nargs='+', default=[100, 180, 240, 280], type=int)
+parser.add_argument('--optim-lr-decay', type=float, default=0.1)
+parser.add_argument('--optim-lr-schedule', nargs='+', default=[150, 250], type=int)
 parser.add_argument('--optim-momentum', type=float, default=0.9)
 parser.add_argument('--optim-nesterov', dest='optim_nesterov', action='store_true')
 parser.add_argument('--no-optim-nesterov', dest='optim_nesterov', action='store_false')
 parser.set_defaults(optim_nesterov=True)
-parser.add_argument('--optim-weight-decay', type=float, default=1e-4)
+parser.add_argument('--optim-weight-decay', type=float, default=5e-4)
 parser.add_argument('--optim-loss-name', default='sparse_softmax_cross_entropy')
 
 # network
 parser.add_argument('--network-name', default='resnet')
-parser.add_argument('--network-args', nargs='+', default=[10, 18], type=int)
+parser.add_argument('--network-args', nargs='+', default=[10, 50, 2], type=int)
 
 # stats
 parser.add_argument('--stats-train-list', nargs='+',
