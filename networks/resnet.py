@@ -28,7 +28,7 @@ def basic_block(x, n_filters, mode, training_mode, weight_decay, name):
             s = create_conv2d(z, n_filters * 2, 1, 2, weight_decay, 'downsample')
         elif mode == 'enlarge':
             h = create_conv2d(h, n_filters * 2, 3, 1, weight_decay, 'conv2d_2')
-            s = create_conv2d(z, n_filters * 2, 1, 1, weight_decay, 'downsample')
+            s = create_conv2d(z, n_filters * 2, 1, 1, weight_decay, 'enlarge')
         elif mode == 'normal':
             h = create_conv2d(h, n_filters, 3, 1, weight_decay, 'conv2d_2')
             s = x
@@ -53,7 +53,7 @@ def bottleneck_block(x, n_filters, mode, training_mode, weight_decay, name):
         elif mode == 'enlarge':
             stride = 1
             mult = 2
-            s = create_conv2d(z, n_filters * 2, 1, 1, weight_decay, 'downsample')
+            s = create_conv2d(z, n_filters * 2, 1, 1, weight_decay, 'enlarge')
         elif mode == 'normal':
             stride = 1
             mult = 1
@@ -76,9 +76,9 @@ def bottleneck_block(x, n_filters, mode, training_mode, weight_decay, name):
 def create_block_group(input_tensor, block, n_blocks, n_filters, mode, training_mode, weight_decay, name):
     x = input_tensor
     with tf.variable_scope(name):
-        x = block(x, n_filters, mode, training_mode, weight_decay, 'block_1')
         for i in range(n_blocks - 1):
-            x = block(x, n_filters * 2, 'normal', training_mode, weight_decay, 'block_{}'.format(i+2))
+            x = block(x, n_filters, 'normal', training_mode, weight_decay, 'block_{}'.format(i+2))
+        x = block(x, n_filters, mode, training_mode, weight_decay, 'block_1')
 
     return x
 
@@ -88,11 +88,11 @@ def create_graph(input_tensor, training_mode, weight_decay, n_classes, block, n_
     x = input_tensor
 
     with tf.variable_scope('features'):
-        x = create_conv2d(x, 16, 3, 1, weight_decay, 'conv1')
-        x = create_block_group(x, block, n_blocks[0], 16, 'enlarge', training_mode, weight_decay, 'group_1')
-        x = create_block_group(x, block, n_blocks[1], 32, 'downsample', training_mode, weight_decay, 'group_2')
-        x = create_block_group(x, block, n_blocks[2], 64, 'downsample', training_mode, weight_decay, 'group_3')
-        x = create_block_group(x, block, n_blocks[3], 128, 'downsample', training_mode, weight_decay, 'group_4')
+        x = create_conv2d(x, 32, 3, 1, weight_decay, 'conv1')
+        x = create_block_group(x, block, n_blocks[0], 32, 'enlarge', training_mode, weight_decay, 'group_1')
+        x = create_block_group(x, block, n_blocks[1], 64, 'downsample', training_mode, weight_decay, 'group_2')
+        x = create_block_group(x, block, n_blocks[2], 128, 'downsample', training_mode, weight_decay, 'group_3')
+        x = create_block_group(x, block, n_blocks[3], 256, 'downsample', training_mode, weight_decay, 'group_4')
         x = keras.layers.GlobalAveragePooling2D()(x)
 
     with tf.variable_scope('classifier'):
