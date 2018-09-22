@@ -31,6 +31,7 @@ def basic_block(x, nf_in, nf_out, stride, training_mode, weight_decay, name):
 
     return h
 
+
 def bottleneck_block(x, nf_in, nf_out, stride, training_mode, weight_decay, name):
     with tf.variable_scope(name):
         h = x
@@ -44,9 +45,9 @@ def bottleneck_block(x, nf_in, nf_out, stride, training_mode, weight_decay, name
         h = tf.layers.batch_normalization(h, training=training_mode, name='bn_2')
         h = tf.nn.relu(h, name='relu_2')
         h = create_conv2d(h, int(nf_out / 4), 3, stride, weight_decay, 'conv2d_2')
-        h = tf.layers.batch_normalization(h, training=training_mode, name='bn_2')
-        h = tf.nn.relu(h, name='relu_2')
-        h = create_conv2d(h, nf_out, 1, 1, weight_decay, 'conv2d_2')
+        h = tf.layers.batch_normalization(h, training=training_mode, name='bn_3')
+        h = tf.nn.relu(h, name='relu_3')
+        h = create_conv2d(h, nf_out, 1, 1, weight_decay, 'conv2d_3')
 
         h = h + s
 
